@@ -154,6 +154,8 @@ for i in data4:
             lmao2.append(i)
 timedict={6:lmao2,7:lmao2,8:lmao,9:lmao,10:o,11:o,12:o}
 datadict={6:data4,7:data4,8:data3,9:data3,10:data2,11:data2,12:data2}
+
+
 @client.command(name='get',pass_context=True,help='fetch your timetable `type tt format for the format`')
 async def get(ctx,Class: int,section: str,day: str):
     day=day.lower()
@@ -163,6 +165,7 @@ async def get(ctx,Class: int,section: str,day: str):
     Class=rets[Class]
     classes={'VI':1,'VII':0,'VIII':1,'IX':0,'X': 2, 'XI':1,'XII':0}
     j=[]
+    section=section.upper()
     zez=timedict[teemp]
     string=Class+'-'+section
     for i in datadict[teemp]:
