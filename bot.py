@@ -17,8 +17,6 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import urllib.request
 from urllib.request import urlopen
-from html_table_parser.parser import HTMLTableParser
-from pprint import pprint
 import numpy as np
 from datetime import datetime
 from time import mktime
@@ -39,13 +37,12 @@ async def on_ready():
 async def credits(ctx):
     await ctx.send('Made by Bhuv')
 
+@client.command(name='invite', help='Get an invite link for the bot')
+async def invite(ctx):
+    await ctx.send('https://discord.com/api/oauth2/authorize?client_id=905146683720097913&permissions=380305984577&scope=bot')
 
-file1 = open("num.txt","r+")
-out=file1.read()
-URL = "https://dpsrkp.net/session-2021-2022-schedule-{}/".format(out)
-r = requests.get(URL) 
 
-df2=pd.read_csv('C:\Python Projs\school notice tracker\data.csv')
+df2=pd.read_csv('data.csv')
 
 
 url=df2['1'][0]
@@ -191,26 +188,26 @@ async def get(ctx,Class: int,section: str,day: str):
 
 @client.command(name='format',pass_context=True,help='returns the format for the get command')
 async def formatt(ctx):
-    await ctx.channel.send('tt get {your class(int)} {your section(capital)} {Day of the week}')
+    await ctx.channel.send('tt `<space>` get `<space>` {your class(int)} `<space>` {your section} `<space>` {Day of the week}')
 
 
 @tasks.loop(seconds=20)
 async def check():
     try:
-        df2=pd.read_csv('C:\Python Projs\school notice tracker\data.csv')
+        df2=pd.read_csv('data.csv')
         mystr=str(df2['time'][0])
         mystr=mystr.partition('.')[0]
         my_time = time.strptime(mystr, '%Y-%m-%d %H:%M:%S')
         dt = datetime.fromtimestamp(mktime(my_time))
         dif=datetime.now()-dt
         minutes = dif.total_seconds() / 60
-        if minutes>300:
-            file1 = open("num.txt","r+")
-            out=file1.read()
+        if minutes>60:
+            file2 = pd.read_csv('num.csv')
+            out2=file2['num'][0]
             now = datetime.now()
             df2['time'][0]=now
             df2.to_csv('data.csv',index=False)
-            URL = "https://dpsrkp.net/session-2021-2022-schedule-{}/".format(str(int(out)+1))
+            URL = "https://dpsrkp.net/session-2021-2022-schedule-{}/".format((str(int(out2)+1)).strip())
             r = requests.get(URL) 
             soup = BeautifulSoup(r.content, 'html5lib')
             table = soup.findAll('iframe')
@@ -221,11 +218,10 @@ async def check():
             data = [{'time':now,'1': class_10_12, '2': class_8_9, '3':class_6_7}]
             df = pd.DataFrame(data)
             df.to_csv('data.csv',index=False)
-            f.truncate(0)
-            f.write(str(int(out)+1))
-            f.close()
+            file2['num'][0]=out2+1
+            file2.to_csv('num.csv',index=False)
             os.execv(sys.executable, ['python'] + sys.argv)
-    except:
+    except: # work on python 3.x
         pass
 
 
