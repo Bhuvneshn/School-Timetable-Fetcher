@@ -63,7 +63,7 @@ with open('0.csv', newline='') as f:
 
 
 
-l=['Monday','Tuesday','Wednesday','Thursday','Friday']
+l=['Monday','Tuesday','Wednesday','Thursday','Friday','Mon','Tue','Wed','Thurs','Fri']
 data2=[]
 for i in data:
     t=list(filter(lambda x: x not in l,i))
@@ -100,7 +100,7 @@ with open('1.csv', newline='') as f:
 
 
 
-l=['Monday','Tuesday','Wednesday','Thursday','Friday']
+l=['Monday','Tuesday','Wednesday','Thursday','Friday','Mon','Tue','Wed','Thurs','Fri']
 data3=[]
 for i in data:
     t=list(filter(lambda x: x not in l,i))
@@ -109,7 +109,6 @@ for i in data:
     if 'X-' in ''.join(t):
         t.insert(16,'') 
     data3.append(t)
-
 lmao=[]
 for i in data3:
     if 'ClSec' in i:
@@ -135,7 +134,7 @@ with open('2.csv', newline='') as f:
 
 
 
-l=['Monday','Tuesday','Wednesday','Thursday','Friday']
+l=['Monday','Tuesday','Wednesday','Thursday','Friday','Mon','Tue','Wed','Thurs','Fri']
 data4=[]
 for i in data:
     t=list(filter(lambda x: x not in l,i))
@@ -173,7 +172,7 @@ async def get(ctx,Class: int,section: str,day: str):
 
     fin=[list(g) for k, g in groupby(k, lambda x: x != '') if k]
     fin2=[list(g) for lop, g in groupby(lop, lambda x: x != '') if lop]
-
+    
 
     embed = discord.Embed(title=f"__**Your Timetable:**__", color=0x03f8fc,timestamp= ctx.message.created_at)
     fin=fin[classes[Class]]
