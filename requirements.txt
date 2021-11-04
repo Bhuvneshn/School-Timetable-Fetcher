@@ -1,0 +1,7 @@
+discord
+asyncio
+pandas
+requests
+beautifulsoup4
+numpy
+lxml
