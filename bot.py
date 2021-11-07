@@ -193,7 +193,7 @@ async def formatt(ctx):
     await ctx.channel.send('tt `<space>` get `<space>` {your class(int)} `<space>` {your section} `<space>` {Day of the week}')
 
 
-@tasks.loop(seconds=3,660)
+@tasks.loop(seconds=3660)
 async def check():
     try:
         df2=pd.read_csv('data.csv')
