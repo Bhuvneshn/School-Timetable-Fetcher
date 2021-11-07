@@ -198,7 +198,7 @@ async def formatt(ctx):
     await ctx.channel.send('tt `<space>` get `<space>` {your class(int)} `<space>` {your section} `<space>` {Day of the week}')
 
 
-@tasks.loop(seconds=10)
+@tasks.loop(seconds=3,660)
 async def check():
     try:
         df2=pd.read_csv('data.csv')
@@ -208,7 +208,7 @@ async def check():
         dt = datetime.fromtimestamp(mktime(my_time))
         dif=datetime.now()-dt
         minutes = dif.total_seconds() / 60
-        if minutes>0.2:
+        if minutes>60:
             file2 = pd.read_csv('num.csv')
             out2=file2['num'][0]
             now = datetime.now()
