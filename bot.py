@@ -109,6 +109,7 @@ for i in data:
     if 'X-' in ''.join(t):
         t.insert(16,'') 
     data3.append(t)
+
 lmao=[]
 for i in data3:
     if 'ClSec' in i:
@@ -172,9 +173,16 @@ async def get(ctx,Class: int,section: str,day: str):
 
     fin=[list(g) for k, g in groupby(k, lambda x: x != '') if k]
     fin2=[list(g) for lop, g in groupby(lop, lambda x: x != '') if lop]
-    
 
-    embed = discord.Embed(title=f"__**Your Timetable:**__", color=0x03f8fc,timestamp= ctx.message.created_at)
+    dfx=pd.read_csv('data.csv')
+    mystrx=str(dfx['time'][0])
+    mystrx=mystrx.partition('.')[0]
+    my_timex = time.strptime(mystrx, '%Y-%m-%d %H:%M:%S')
+    dtx = datetime.fromtimestamp(mktime(my_timex))
+    file21 = pd.read_csv('num.csv')
+    out21=file21['num'][0]
+    embed = discord.Embed(title=f"__**Your Timetable (#{out21}):**__", color=0x03f8fc,timestamp=dtx)
+    embed.set_footer(text='Last updated')
     fin=fin[classes[Class]]
     fin2=fin2[classes[Class]]
     
@@ -190,7 +198,7 @@ async def formatt(ctx):
     await ctx.channel.send('tt `<space>` get `<space>` {your class(int)} `<space>` {your section} `<space>` {Day of the week}')
 
 
-@tasks.loop(seconds=20)
+@tasks.loop(seconds=10)
 async def check():
     try:
         df2=pd.read_csv('data.csv')
@@ -200,7 +208,7 @@ async def check():
         dt = datetime.fromtimestamp(mktime(my_time))
         dif=datetime.now()-dt
         minutes = dif.total_seconds() / 60
-        if minutes>60:
+        if minutes>0.2:
             file2 = pd.read_csv('num.csv')
             out2=file2['num'][0]
             now = datetime.now()
