@@ -23,6 +23,9 @@ from time import mktime
 import time
 import csv
 from itertools import groupby
+from pymongo import MongoClient
+from datetime import date
+import calendar
 
 intents = discord.Intents().all()
 client = commands.Bot(command_prefix='tt ',intents=intents)
@@ -40,6 +43,25 @@ async def credits(ctx):
 @client.command(name='invite', help='Get an invite link for the bot')
 async def invite(ctx):
     await ctx.send('https://discord.com/api/oauth2/authorize?client_id=905146683720097913&permissions=380305984577&scope=bot')
+
+
+
+cluster=MongoClient("mera_DB")
+
+accs=cluster["discord"]["accounts"]
+
+@client.command(name='create', pass_context= True, help='create/update account')
+async def create(ctx,classs: int,section: str):
+    checker=accs.find_one({"id" : ctx.message.author.id})
+    if checker is None:
+        newuser={"id":ctx.message.author.id,"class":classs,"section":section}
+        accs.insert_one(newuser)
+        await ctx.message.add_reaction('👍')
+    else:
+        accs.update_one({"id":ctx.message.author.id},{"$set":{"class":classs}})
+        accs.update_one({"id":ctx.message.author.id},{"$set":{"section":section}})
+        await ctx.message.add_reaction('👍')
+
 
 
 df2=pd.read_csv('data.csv')
@@ -154,46 +176,59 @@ datadict={6:data4,7:data4,8:data3,9:data3,10:data2,11:data2,12:data2}
 
 
 @client.command(name='get',pass_context=True,help='fetch your timetable `type tt format for the format`')
-async def get(ctx,Class: int,section: str,day: str):
-    day=day.lower()
-    days={'monday':0,'tuesday':1,'wednesday':2,'thursday':3,'friday':4}
-    rets={6:'VI',7:'VII',8:'VIII',9:'IX',10:'X',11:'XI',12:'XII'}
-    teemp=Class
-    Class=rets[Class]
-    classes={'VI':1,'VII':0,'VIII':1,'IX':0,'X': 2, 'XI':1,'XII':0}
-    j=[]
-    section=section.upper()
-    zez=timedict[teemp]
-    string=Class+'-'+section
-    for i in datadict[teemp]:
-        if string in i:
-            j.append(i)
-    k=j[days[day]]
-    lop=zez[days[day]]
+async def get(ctx,day=calendar.day_name[date.today().weekday()]):
+    try:
+        if day=='Saturday' or day=='Sunday':
+            day='Monday'
+        global accs
+        checker=accs.find_one({"id" : ctx.message.author.id})
+        Class=checker['class']
+        section=checker['section']
+        day=day.lower()
+        days={'monday':0,'tuesday':1,'wednesday':2,'thursday':3,'friday':4}
+        rets={6:'VI',7:'VII',8:'VIII',9:'IX',10:'X',11:'XI',12:'XII'}
+        teemp=Class
+        Class=rets[Class]
+        classes={'VI':1,'VII':0,'VIII':1,'IX':0,'X': 2, 'XI':1,'XII':0}
+        j=[]
+        section=section.upper()
+        zez=timedict[teemp]
+        string=Class+'-'+section
+        for i in datadict[teemp]:
+            if string in i:
+                j.append(i)
+        k=j[days[day]]
+        lop=zez[days[day]]
 
-    fin=[list(g) for k, g in groupby(k, lambda x: x != '') if k]
-    fin2=[list(g) for lop, g in groupby(lop, lambda x: x != '') if lop]
+        fin=[list(g) for k, g in groupby(k, lambda x: x != '') if k]
+        fin2=[list(g) for lop, g in groupby(lop, lambda x: x != '') if lop]
 
 
-    file21 = pd.read_csv('num.csv')
-    out21=file21['num'][0]
-    embed = discord.Embed(title=f"__**Your Timetable (#{out21}):**__", color=0x03f8fc, timestamp = datetime.now())
-    fin=fin[classes[Class]]
-    fin2=fin2[classes[Class]]
-    
-    del fin[0]
-    del fin2[0]
-    ranger=min((len(fin2)),(len(fin)))
-    for i in range(ranger):
-        embed.add_field(name=f'**{fin2[i]}**', value=f'> {fin[i]}\n',inline=False)
-    await ctx.reply(embed=embed)
+        file21 = pd.read_csv('num.csv')
+        out21=file21['num'][0]
+        embed = discord.Embed(title=f"__**Your Timetable (#{out21}):**__", color=0x03f8fc)
+        fin=fin[classes[Class]]
+        fin2=fin2[classes[Class]]
+        embed.add_field(name=f'**Day**', value=f'> {day.title()}\n',inline=False)
+        del fin[0]
+        del fin2[0]
+        ranger=min((len(fin2)),(len(fin)))
+        for i in range(ranger):
+            embed.add_field(name=f'**{fin2[i]}**', value=f'> {fin[i]}\n',inline=False)
+        await ctx.reply(embed=embed)
+    except Exception as e: 
+        print(e)
+        await ctx.reply('Create an account or check `tt format` if you have already made an account :smile:')
 
 @client.command(name='format',pass_context=True,help='returns the format for the get command')
 async def formatt(ctx):
-    await ctx.channel.send('tt `<space>` get `<space>` {your class(int)} `<space>` {your section} `<space>` {Day of the week}')
+    embed2 = discord.Embed(title=f"__**Format:**__", color=0x03f8fc)
+    embed2.add_field(name=f'**Creating an Account**', value=f'> tt [space] [Class] [space] [Section]\n',inline=False)
+    embed2.add_field(name=f'**Getting your Timetable**', value=f'> tt [space] get [space] [Day of the week]\n',inline=False)
+    await ctx.send(embed=embed2)
 
 
-@tasks.loop(seconds=3,660)
+@tasks.loop(seconds=3660)
 async def check():
     try:
         df2=pd.read_csv('data.csv')
@@ -227,4 +262,4 @@ async def check():
         pass
 
 
-client.run('shh')
+client.run('shh') 
