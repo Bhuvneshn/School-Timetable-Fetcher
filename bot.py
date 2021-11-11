@@ -26,6 +26,7 @@ from itertools import groupby
 from pymongo import MongoClient
 from datetime import date
 import calendar
+from datetime import timedelta
 
 intents = discord.Intents().all()
 client = commands.Bot(command_prefix='tt ',intents=intents)
@@ -46,7 +47,7 @@ async def invite(ctx):
 
 
 
-cluster=MongoClient("mera_DB")
+cluster=MongoClient("mydb")
 
 accs=cluster["discord"]["accounts"]
 
@@ -174,16 +175,51 @@ for i in data4:
 timedict={6:lmao2,7:lmao2,8:lmao,9:lmao,10:o,11:o,12:o}
 datadict={6:data4,7:data4,8:data3,9:data3,10:data2,11:data2,12:data2}
 
+def get_lcs(s, t, n, m):
+    dp_cur = dp_prev = [0 for i in range(m+1)]
+    for i in range(1, n+1):
+        for j in range(1, m+1):
+            if s[i-1] == t[j-1]:
+                dp_cur[j] = dp_prev[j-1] + 1
+            else:
+                dp_cur[j] = max(dp_cur[j-1], dp_prev[j])
+        dp_prev = dp_cur.copy()
+    return dp_cur[m]
+
+def day_of_week(s):
+    s = s.lower()
+    best = ''; mx = 0
+    days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']
+    for d in days:
+        l = get_lcs(s, d, len(s), len(d))
+        if l >= mx:
+            mx = l
+            best = d
+    if mx == 0:
+        # return default (today)
+        pass
+    return best
 
 @client.command(name='get',pass_context=True,help='fetch your timetable `type tt format for the format`')
-async def get(ctx,day=calendar.day_name[date.today().weekday()]):
+async def get(ctx,day=None):
     try:
+        tnmy=14
+        tk=datetime.now().strftime("%H")
+        if day == None:
+            if int(tk)>tnmy:
+                issoke=datetime.now()
+                issoke += timedelta(days=1)
+                day=str(issoke.strftime("%A"))
+            else:
+                day=calendar.day_name[date.today().weekday()]
         if day=='Saturday' or day=='Sunday':
             day='Monday'
         global accs
         checker=accs.find_one({"id" : ctx.message.author.id})
         Class=checker['class']
         section=checker['section']
+        day=day.lower()
+        day = day_of_week(day)
         day=day.lower()
         days={'monday':0,'tuesday':1,'wednesday':2,'thursday':3,'friday':4}
         rets={6:'VI',7:'VII',8:'VIII',9:'IX',10:'X',11:'XI',12:'XII'}
@@ -223,8 +259,8 @@ async def get(ctx,day=calendar.day_name[date.today().weekday()]):
 @client.command(name='format',pass_context=True,help='returns the format for the get command')
 async def formatt(ctx):
     embed2 = discord.Embed(title=f"__**Format:**__", color=0x03f8fc)
-    embed2.add_field(name=f'**Creating an Account**', value=f'> tt [space] [Class] [space] [Section]\n',inline=False)
-    embed2.add_field(name=f'**Getting your Timetable**', value=f'> tt [space] get [space] [Day of the week]\n',inline=False)
+    embed2.add_field(name=f'**Creating an Account**', value=f'> tt create [space] [Class] [space] [Section]\n',inline=False)
+    embed2.add_field(name=f'**Getting your Timetable**', value=f'> tt [space] get [space] [Day of the week (Optional - By default current day)]\n',inline=False)
     await ctx.send(embed=embed2)
 
 
@@ -261,6 +297,5 @@ async def check():
     except: # work on python 3.x
         pass
 
+
 client.run('shh') 
-
-
